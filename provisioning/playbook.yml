@@ -1,0 +1,168 @@
+---
+- name: inetrouter | Config network
+  hosts: inetrouter
+  become: true
+  vars:
+    ip: '192.168.1.1'
+    gateway: '192.168.255.2'
+    network: 
+  tasks:
+    - name: inetRouter | Forwarding enable  
+      sysctl:
+        name: net.ipv4.ip_forward
+        value: '1'
+        sysctl_set: yes
+
+    - name: inetRouter | Configure eth1
+      copy: 
+        src: ./ifcfg-eth1
+        dest: /etc/sysconfig/network-scripts/ifcfg-eth1
+      notify: restart network
+
+    - name: inetRouter | Configure eth2
+      copy: 
+        src: ./ifcfg-eth2
+        dest: /etc/sysconfig/network-scripts/ifcfg-eth2
+      notify: restart network
+
+    - name: inetRouter | Configure bond0
+      template:  
+        src: ./ifcfg-bond0.j2
+        dest: /etc/sysconfig/network-scripts/ifcfg-bond0
+      notify: restart network
+
+  handlers:
+    - name: restart network
+      systemd:
+        name: network
+        state: restarted  
+
+- name: centralrouter | Config network
+  hosts: centralrouter
+  become: true
+  vars:
+    ip: '192.168.1.2'
+    gateway: '192.168.255.2'
+    network: 
+  tasks:
+    - name: centralrouter | Forwarding enable  
+      sysctl:
+        name: net.ipv4.ip_forward
+        value: '1'
+        sysctl_set: yes
+
+    - name: centralrouter | Configure eth1
+      copy: 
+        src: ./ifcfg-eth1
+        dest: /etc/sysconfig/network-scripts/ifcfg-eth1
+      notify: restart network
+
+    - name: centralrouter | Configure eth2
+      copy: 
+        src: ./ifcfg-eth2
+        dest: /etc/sysconfig/network-scripts/ifcfg-eth2
+      notify: restart network
+
+    - name: centralrouter | Configure bond0
+      template:  
+        src: ./ifcfg-bond0.j2
+        dest: /etc/sysconfig/network-scripts/ifcfg-bond0
+      notify: restart network
+
+    # - name: centralrouter | Configure vlan10
+    #   copy: 
+    #     src: ./ifcfg-vlan10
+    #     dest: /etc/sysconfig/network-scripts/ifcfg-vlan10
+    #   notify: restart network
+      
+    # - name: centralrouter | Configure vlan5
+    #   copy: 
+    #     src: ./ifcfg-vlan5
+    #     dest: /etc/sysconfig/network-scripts/ifcfg-vlan5
+    #   notify: restart network      
+
+  handlers:
+    - name: restart network
+      systemd:
+        name: network
+        state: restarted
+
+- name: testserver1 | Config network
+  hosts: testserver1
+  become: true
+  vars:
+    ip: '10.10.10.1'
+    vlan: '5'
+  tasks:    
+  
+    - name: testserver1 | Configure vlan if
+      template:  
+        src: ./ifcfg-eth1.x.j2
+        dest: /etc/sysconfig/network-scripts/ifcfg-eth1.5
+      notify: restart network
+      
+  handlers:
+    - name: restart network
+      systemd:
+        name: network
+        state: restarted      
+
+- name: testclient1 | Config network
+  hosts: testclient1
+  become: true
+  vars:
+    ip: '10.10.10.254'
+    vlan: '5'
+  tasks:    
+  
+    - name: testclient1 | Configure vlan if
+      template:  
+        src: ./ifcfg-eth1.x.j2
+        dest: /etc/sysconfig/network-scripts/ifcfg-eth1.5
+      notify: restart network
+      
+  handlers:
+    - name: restart network
+      systemd:
+        name: network
+        state: restarted    
+        
+- name: testserver1 | Config network
+  hosts: testserver1
+  become: true
+  vars:
+    ip: '10.10.10.1'
+    vlan: '10'
+  tasks:    
+  
+    - name: testserver1 | Configure vlan if
+      template:  
+        src: ./ifcfg-eth1.x.j2
+        dest: /etc/sysconfig/network-scripts/ifcfg-eth1.10
+      notify: restart network
+      
+  handlers:
+    - name: restart network
+      systemd:
+        name: network
+        state: restarted      
+
+- name: testclient1 | Config network
+  hosts: testclient1
+  become: true
+  vars:
+    ip: '10.10.10.254'
+    vlan: '10'
+  tasks:    
+  
+    - name: testclient1 | Configure vlan if
+      template:  
+        src: ./ifcfg-eth1.x.j2
+        dest: /etc/sysconfig/network-scripts/ifcfg-eth1.10
+      notify: restart network
+      
+  handlers:
+    - name: restart network
+      systemd:
+        name: network
+        state: restarted         

@@ -1,0 +1,8 @@
+BOOTPROTO=static
+NM_CONTROLLED=no
+ONBOOT=yes
+TYPE=Ethernet
+VLAN=yes
+DEVICE=eth1.{{ vlan }}
+IPADDR={{ ip }}
+NETMASK=255.255.255.0
